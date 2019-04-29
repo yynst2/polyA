@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 
 
-def read_known_genes(genome, relative_positions=True):
+def read_known_genes(path, genome, relative_positions=True):
     """Reads annotation files derived from UCSC
     :param genome: Genome version (such as hg19, hg38)
     :param relative_positions: Whether exon positions are relative to TSS or chromosomal positions
@@ -10,10 +10,10 @@ def read_known_genes(genome, relative_positions=True):
     """
     column_names = ['name', 'chrom', 'strand', 'txStart', 'txEnd', 'cdsStart', 'cdsEnd', 'exonCount', 'exonStarts',
                     'exonEnds']
-    _transcripts = pd.read_csv('data/knownGene.%s.txt.gz' % genome, sep='\t', compression='gzip',
+    _transcripts = pd.read_csv(path+'/knownGene.%s.txt.gz' % genome, sep='\t', compression='gzip',
                                names=column_names, header=None, usecols=list(range(len(column_names))))
 
-    kg_xref = pd.read_csv('data/kgXreg.%s.txt.gz' % genome, sep='\t', compression='gzip',
+    kg_xref = pd.read_csv(path+'/kgXreg.%s.txt.gz' % genome, sep='\t', compression='gzip',
                           names=['name', 'geneSymbol', 'description'], header=None, usecols=[0, 4, 7])
     _transcripts = pd.merge(_transcripts, kg_xref, on='name', how='left')
 

@@ -18,11 +18,14 @@ from scipy.stats import ttest_ind, ks_2samp, skew
 from hmm_kit import HMMModel as hmm
 from hmm_kit.bwiter import bw_iter_log
 from utils import read_known_genes
+import argparse
 
 WINDOW_JUMPS = 20
 WINDOW_SIZE = 50  # 35
 DISCRETE = False
 DEBUG = False
+
+
 
 
 def get_exon_values_windows(transcript_values, exon_starts, exon_ends, window_jumps=WINDOW_JUMPS,
@@ -44,13 +47,13 @@ def calc_fdr(p_vals, alpha=0.05):
     return p_vals_corrected, correction / n_hypo
 
 
-def hmm_frag_transcripts(all_bw, experiment, feature_extractors={}):
+def hmm_frag_transcripts(all_bw, experiment, feature_extractors={},build_name='hg19',path='data'):
     global DISCRETE
     from sklearn.linear_model import LinearRegression
     print('Started %s' % experiment)
     output_file = 'breakpoint_score_{}.csv'.format(experiment)
 
-    transcripts = read_known_genes('hg19')
+    transcripts = read_known_genes(path,build_name)
     # skip transcripts with no cds
     transcripts = transcripts.loc[transcripts.cdsStart < transcripts.cdsEnd]
 
@@ -306,7 +309,8 @@ def main():
     parser.add_argument('name', help='Experiment name (input type)')
     parser.add_argument('-norm_type', help='Substring appears in the control files')
     parser.add_argument('-non_discrete', dest='discrete', action='store_false', help='use discrete of continuous HMM')
-
+    parser.add_argument('-build', dest='build', default='hg19', action='store')
+    parser.add_argument('-path', dest='path', default='hdata', action='store')
     parser.add_argument('file', help='bigwig files as input', nargs='+')
     args = parser.parse_args()
     DISCRETE = args.discrete
@@ -332,7 +336,7 @@ def main():
         'count': lambda x: x.shape[0]
     }
 
-    hmm_frag_transcripts(all_bw, args.name, feature_extractors=feature_extractors)
+    hmm_frag_transcripts(all_bw, args.name, feature_extractors=feature_extractors,build_name=args.build,path=args.path)
 
 
 if __name__ == '__main__':
